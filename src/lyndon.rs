@@ -16,7 +16,9 @@ impl LyndonWord {
 
     pub fn new_smallest(len: usize, max_letter: Letter) -> Self {
         let mut vec = vec![0; len];
-        vec[len - 1] = 1;
+        if len > 1 {
+            vec[len - 1] = 1;
+        }
         LyndonWord {
             vec,
             len,
@@ -98,18 +100,23 @@ fn next_fllw(lw: &mut LyndonWord) -> Result<(), String> {
     // des mots de Lyndon de longueur bornee", Jean-Pierre DUVAL (1988)
     //
     // NOTE. Just shifted the indices by one when looking to a vector cell.
-    let n = lw.len;
+    let n = lw.vec.len();
+    let mut i = lw.len;
+
+    // Add this to handle |l|=1
+    if n == 1 && lw.vec[1 - 1] == lw.max_letter {
+        return Err("This was the greatest Lyndon word of this fixed length".to_string());
+    }
 
     // Remove right trailing max letters, and increase the first non-max letter
-    let mut i = n;
     while lw.vec[i - 1] == lw.max_letter {
-        i -= 1
+        i -= 1;
     }
     lw.vec[i - 1] += 1;
 
     // If the first letter is maximal, then the current Lyndon word is
-    // already the greatest of its size
-    if lw.vec[1 - 1] == lw.max_letter {
+    // already the greatest of its size (only if n>1)
+    if lw.vec[1 - 1] == lw.max_letter && n > 1 {
         return Err("This was the greatest Lyndon word of this fixed length".to_string());
     }
 
@@ -155,6 +162,9 @@ fn next_fllw(lw: &mut LyndonWord) -> Result<(), String> {
 fn test_fllw_smallest() {
     let fllw = LyndonWord::new_smallest(6, 1);
     assert_eq!(fllw.get_word(), [0, 0, 0, 0, 0, 1]);
+
+    let fllw = LyndonWord::new_smallest(1, 1);
+    assert_eq!(fllw.get_word(), [0]);
 }
 
 #[test]
@@ -182,6 +192,10 @@ fn test_fixed_length_lw_iterator() {
 
     let mut lw = LyndonWord::new_smallest(4, 2);
     assert_eq!(lw.iter(true).collect::<Vec<_>>(), fllw42);
+
+    let fllw12 = [[0], [1], [2]];
+    let mut lw = LyndonWord::new_smallest(1, 2);
+    assert_eq!(lw.iter(true).collect::<Vec<_>>(), fllw12);
 }
 
 #[test]
@@ -223,4 +237,8 @@ fn test_bounded_length_lw_iterator() {
 
     let mut lw = LyndonWord::new_smallest(4, 2);
     assert_eq!(lw.iter(false).collect::<Vec<_>>(), bllw42);
+
+    let bllw12 = [[0], [1], [2]];
+    let mut lw = LyndonWord::new_smallest(1, 2);
+    assert_eq!(lw.iter(false).collect::<Vec<_>>(), bllw12);
 }

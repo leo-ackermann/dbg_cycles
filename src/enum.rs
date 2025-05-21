@@ -54,6 +54,12 @@ fn test_enum_cycles_fixed_length() {
         [[0,1,0], [1,0,1], [0,1,0]]
     ];
     assert_eq!(enum_cycles_fixed_length(2, 3, 2), cycles_2_3_2);
+    let cycles_1_3_2 = [
+        [[0,0,0], [0,0,0]],
+        [[1,1,1], [1,1,1]]
+    ];
+    assert_eq!(enum_cycles_fixed_length(1, 3, 2), cycles_1_3_2);
+
 
     // l > k regime
     let cycles_6_3_2 = [
