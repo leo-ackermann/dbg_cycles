@@ -2,7 +2,10 @@ use clap::{Parser, Subcommand};
 
 #[derive(Parser, Debug)]
 #[command(name = "dbg_cycles")]
-#[command(about = "CLI tool to count and enumerate simple cycles in the de Bruijn graph", version = "1.0")]
+#[command(
+    about = "CLI tool to count and enumerate simple cycles in the de Bruijn graph",
+    version = "1.0"
+)]
 struct Args {
     #[command(subcommand)]
     command: Commands,
@@ -14,31 +17,30 @@ enum Commands {
     Count {
         /// Order of the de Bruijn graph
         #[arg(short, long)]
-        order: u8,
+        order: usize,
         /// Length of the cycles
-        #[arg(short, long)]
-        length: u8,
+        #[arg(short, long, default_value_t = 0)]
+        length: usize,
         /// Size of the alphabet
         #[arg(short, long, default_value_t = 2)]
         sigma: u8,
-        /// If enable, do not relies on formulas for computing the number of non-<order>-Lyndon words
-        #[arg(long)]
-        brute_force: bool,
     },
 
-     /// Enumerate simple cycles of the de Bruijn graph (of length no larger than the order)
+    /// Enumerate simple cycles of the de Bruijn graph (of length no larger than the order)
     Enum {
         /// Order of the de Bruijn graph
         #[arg(short, long)]
-        order: u8,
+        order: usize,
         /// Length of the cycles
         #[arg(short, long)]
-        length: u8,
+        length: usize,
         /// Size of the alphabet
         #[arg(short, long, default_value_t = 2)]
-        sigma: u8,
+        sigma: usize,
     },
 }
+
+use colored::Colorize;
 
 fn main() {
     let cli = Args::parse();
@@ -48,13 +50,8 @@ fn main() {
             order,
             length,
             sigma,
-            brute_force,
         } => {
-            println!(
-                "Running dbg_cycles count with order={}, length={}, sigma={}, brute_force={}",
-                order, length, sigma, brute_force
-            );
-            // TODO: Call
+            cli_count(*length, *order, *sigma);
         }
         Commands::Enum {
             order,
@@ -69,3 +66,63 @@ fn main() {
         }
     }
 }
+
+use dbg_cycles::formulae::{count_cycles_with_formula, Count};
+
+fn cli_count(length: usize, order: usize, sigma: u8) {
+    if length != 0 {
+        let count = count_cycles_with_formula(length, order, sigma, false);
+        let mut answer = 0;
+        let mut status = "dummy".purple();
+        match count {
+            Count::FromProvedFormula(x) => {
+                status = "proved".green();
+                answer = x;
+            }
+            Count::FromConjecturedFormula(x) => {
+                status = "conjectured".yellow();
+                answer = x;
+            }
+            Count::FromConjecturedFormula(x) => {
+                status = "computed".blue();
+                answer = x;
+            }
+            _ => (),
+        }
+        println!("There are {} simple cycles of length {} in the deBruijn graph of order {} over the [0..{}) alphabet ({})",
+                 answer,
+                 length,
+                 order,
+                 sigma,
+                 status,
+        )
+    } else {
+        println!("Within dBG({}, {}), one can find...\n", order, sigma);
+        for l in 1..=usize::pow(sigma as usize, order as u32) {
+            let count = count_cycles_with_formula(l, order, sigma, false);
+            let mut answer = 0;
+            let mut status = "dummy".purple();
+            match count {
+                Count::FromProvedFormula(x) => {
+                    status = "proved".green();
+                    answer = x;
+                }
+                Count::FromConjecturedFormula(x) => {
+                    status = "conjectured".yellow();
+                    answer = x;
+                }
+                Count::FromEnum(x) => {
+                    status = "computed".blue();
+                    answer = x;
+                }
+                _ => (),
+            }
+            println!(
+                "...simple cycles of length {}:\t{}\t({})",
+                l, answer, status,
+            );
+        }
+    }
+}
+
+fn cli_test_conjecture() {}

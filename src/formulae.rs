@@ -2,15 +2,23 @@ use crate::lyndon::{LyndonWord, Word, Cycle};
 use crate::perfect::{is_perfect};
 
 #[derive(Debug, PartialEq)]
-enum Count {
-    FromFormula(FromFormula),
-    FromEnum(usize),
-}
-#[derive(Debug, PartialEq)]
-enum FromFormula {
+pub enum Count {
+    FromProvedFormula(u32),
+    FromConjecturedFormula(u32),
+    FromEnum(u32),
     NoFormula,
-    FromConjecturedFormula(usize),
-    FromProvedFormula(usize),
+}
+
+impl Count {
+    fn to_option(&self) -> Option<u32> {
+        match *self {
+            Count::FromProvedFormula(x) => Some(x),
+            Count::FromConjecturedFormula(x) => Some(x),
+            Count::FromEnum(x) => Some(x),
+            Count::NoFormula => None,
+        }
+
+    }
 }
 
 fn count_cycles_only_enum(length: usize, order: usize, sigma: u8) -> Count {
@@ -21,7 +29,7 @@ fn count_cycles_only_enum(length: usize, order: usize, sigma: u8) -> Count {
         lws.retain(|w| is_perfect(w, order))
     }
     // Return the size
-    Count::FromEnum(lws.len())
+    Count::FromEnum(lws.len() as u32)
 }
 
 #[test]
@@ -135,21 +143,45 @@ fn nb_nplw_plusthree(k: usize, sigma: u8) -> u32 {
 }
 
 
+pub fn count_cycles_with_formula(length: usize, order:usize, sigma:u8, only_formula: bool) -> Count {
+    if length <= order+1 {
+        Count::FromProvedFormula(nb_lw(length, sigma))
+    } else if length == order+2 {
+        Count::FromProvedFormula(nb_lw(length, sigma) - nb_nplw_plustwo(order, sigma))
+    } else if length == order+3 {
+        Count::FromConjecturedFormula(nb_lw(length, sigma) - nb_nplw_plusthree(order, sigma))
+    } else if length == usize::pow(sigma as usize, order as u32) {
+        Count::FromProvedFormula(nb_dbs(order, sigma))
+    } else {
+        if only_formula{
+            Count::NoFormula
+        } else {
+            count_cycles_only_enum(length, order, sigma)
+        }
+    }
+}
 
+#[test]
+fn test_count_cycles_with_formula() {
+    // Not only formula
+    assert_eq!(count_cycles_with_formula(1, 3, 2, false).to_option().unwrap(), 2);
+    assert_eq!(count_cycles_with_formula(2, 3, 2, false).to_option().unwrap(), 1);
+    assert_eq!(count_cycles_with_formula(3, 3, 2, false).to_option().unwrap(), 2);
+    assert_eq!(count_cycles_with_formula(4, 3, 2, false).to_option().unwrap(), 3);
+    assert_eq!(count_cycles_with_formula(5, 3, 2, false).to_option().unwrap(), 2);
+    assert_eq!(count_cycles_with_formula(6, 3, 2, false).to_option().unwrap(), 3);
+    assert_eq!(count_cycles_with_formula(7, 3, 2, false).to_option().unwrap(), 4);
+    assert_eq!(count_cycles_with_formula(8, 3, 2, false).to_option().unwrap(), 2);
+    assert_eq!(count_cycles_with_formula(9, 3, 2, false).to_option().unwrap(), 0);
 
-
-// fn count_cycles_with_formula(length: usize, order:usize, sigma:u8, only_formula: bool) -> Count {
-//     if length <= order+1 {
-//         Count(FromFormula(Proved(nb_lw(length, sigma))))
-//     } else if length == order+2 {
-//         FromFormula::Proved(nb_lw(length, sigma) - nb_nplw_plustwo(k, sigma))
-//     } else if length == order+3 {
-//         FromFormula::Proved(nb_lw(length, sigma) - nb_nplw_plusthree(k, sigma))
-//     } else {
-//         if only_formula{
-//             FromFormula::NoFormula
-//         } else {
-//             count_cycles_only_enum()
-//         }
-//     }
-// }
+    // Only formula
+    assert_eq!(count_cycles_with_formula(1, 3, 2, true).to_option(), Some(2));
+    assert_eq!(count_cycles_with_formula(2, 3, 2, true).to_option(), Some(1));
+    assert_eq!(count_cycles_with_formula(3, 3, 2, true).to_option(), Some(2));
+    assert_eq!(count_cycles_with_formula(4, 3, 2, true).to_option(), Some(3));
+    assert_eq!(count_cycles_with_formula(5, 3, 2, true).to_option(), Some(2));
+    assert_eq!(count_cycles_with_formula(6, 3, 2, true).to_option(), Some(3));
+    assert_eq!(count_cycles_with_formula(7, 3, 2, true).to_option(), None);
+    assert_eq!(count_cycles_with_formula(8, 3, 2, true).to_option(), Some(2));
+    assert_eq!(count_cycles_with_formula(9, 3, 2, true).to_option(), None);
+}
