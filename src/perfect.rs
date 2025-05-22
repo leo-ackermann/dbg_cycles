@@ -1,4 +1,14 @@
-use crate::Word;
+/**
+*
+* #### perfect.rs ####
+*
+* Where perfectness is defined, so that filtering can be made in enum.rs. The
+* word under scrutiny is concatenated to itself, its kmers are extracted to
+* populate sorted-then-deduplicated list (akin of a set). The word is perfect if
+* the set is made of |w| elements.
+*
+**/
+use crate::words::Word;
 
 pub fn is_perfect(word: &Word, k: usize) -> bool {
     let mut wword = word.clone();
@@ -11,10 +21,14 @@ pub fn is_perfect(word: &Word, k: usize) -> bool {
 
     kmers.sort();
     kmers.dedup();
-
     kmers.len() == word.len()
 }
 
+// A variation of the function where it is further assumed that the input word
+// is a Lyndon word. This allows to skip some perfection verifications in
+// specific regimes.
+//
+// NOTE. Checking that the word is indeed Lyndon is part of your duty!
 pub fn is_perfect_lyndon(word: &Word, k: usize) -> bool {
     if word.len() <= k {
         return true;
@@ -30,7 +44,6 @@ pub fn is_perfect_lyndon(word: &Word, k: usize) -> bool {
 
     kmers.sort();
     kmers.dedup();
-
     kmers.len() == word.len()
 }
 
