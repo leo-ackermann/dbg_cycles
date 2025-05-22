@@ -10,7 +10,7 @@ pub enum Count {
 }
 
 impl Count {
-    fn to_option(&self) -> Option<u32> {
+    pub fn to_option(&self) -> Option<u32> {
         match *self {
             Count::FromProvedFormula(x) => Some(x),
             Count::FromConjecturedFormula(x) => Some(x),
@@ -21,7 +21,7 @@ impl Count {
     }
 }
 
-fn count_cycles_only_enum(length: usize, order: usize, sigma: u8) -> Count {
+pub fn count_cycles_only_enum(length: usize, order: usize, sigma: u8) -> Count {
     // Recover LyndonWords
     let mut lws = LyndonWord::new_smallest(length as usize, sigma-1).iter(true).collect::<Vec<Word>>();
     // Filter perfect only

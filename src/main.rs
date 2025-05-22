@@ -32,12 +32,15 @@ enum Commands {
         #[arg(short, long)]
         order: usize,
         /// Length of the cycles
-        #[arg(short, long)]
+        #[arg(short, long, default_value_t = 0)]
         length: usize,
         /// Size of the alphabet
         #[arg(short, long, default_value_t = 2)]
-        sigma: usize,
+        sigma: u8,
     },
+
+    /// Test the conjecture by comparing the result obtain with enumeration
+    Conjecture,
 }
 
 use colored::Colorize;
@@ -58,12 +61,9 @@ fn main() {
             length,
             sigma,
         } => {
-            println!(
-                "Running dbg_cycles enum with order={}, length={}, sigma={}",
-                order, length, sigma
-            );
-            // TODO: Call
+            cli_enum(*length, *order, *sigma);
         }
+        Commands::Conjecture => cli_test_conjecture_plusthree(),
     }
 }
 
@@ -83,7 +83,7 @@ fn cli_count(length: usize, order: usize, sigma: u8) {
                 status = "conjectured".yellow();
                 answer = x;
             }
-            Count::FromConjecturedFormula(x) => {
+            Count::FromEnum(x) => {
                 status = "computed".blue();
                 answer = x;
             }
@@ -125,4 +125,84 @@ fn cli_count(length: usize, order: usize, sigma: u8) {
     }
 }
 
-fn cli_test_conjecture() {}
+use dbg_cycles::formulae::count_cycles_only_enum;
+
+fn cli_test_conjecture_plusthree() {
+    for y in 0.. {
+        for x in 0..=y {
+            // Run comparison on sigma-order, order
+            let sigma = y - x + 2;
+            let order = x + 2;
+            print!("(s={}, k={})\t", sigma, order);
+            if let Count::FromConjecturedFormula(conjecture) =
+                count_cycles_with_formula(order + 3, order, sigma as u8, true)
+            {
+                let count_enum = count_cycles_only_enum(order + 3, order, sigma as u8)
+                    .to_option()
+                    .unwrap();
+                let comparison = if conjecture == count_enum {
+                    "===".green()
+                } else {
+                    "=/=".red()
+                };
+                println!("{}\t {}\t {}", conjecture, comparison, count_enum);
+            }
+        }
+    }
+}
+
+use dbg_cycles::r#enum::{enum_cycles_bounded_length, enum_cycles_fixed_length};
+
+fn cli_enum(length: usize, order: usize, sigma: u8) {
+    if length != 0 {
+        let cycles = enum_cycles_fixed_length(length, order, sigma);
+
+        println!(
+            "The {} simple cycles of length {} in dBG({}, {}) are",
+            cycles.len(),
+            length,
+            order,
+            sigma
+        );
+        for (_, cycle) in cycles.iter().enumerate() {
+            print!("  ");
+            for (j, word) in cycle.iter().enumerate() {
+                if j != 0 {
+                    print!(" --> ");
+                }
+                for (k, letter) in word.iter().enumerate() {
+                    if k != 0 {
+                        print!(".");
+                    }
+                    print!("{}", letter);
+                }
+            }
+            println!();
+        }
+    } else {
+        let max_cycle_length = usize::pow(sigma as usize, order as u32);
+        let mut cycles = enum_cycles_bounded_length(max_cycle_length, order, sigma);
+        cycles.sort_by_key(|x| (x.len(), x.clone()));
+        let mut current_len = 0;
+        println!("In the de Bruijn graph dBG({}, {})...", order, sigma);
+        for (_, cycle) in cycles.iter().enumerate() {
+            if current_len != cycle.len() {
+                current_len = cycle.len();
+                println!("\n..the simple cycles of length {}", current_len);
+            }
+            print!("  ");
+            for (j, word) in cycle.iter().enumerate() {
+                if j != 0 {
+                    print!(" --> ");
+                }
+                for (k, letter) in word.iter().enumerate() {
+                    if k != 0 {
+                        print!(".");
+                    }
+                    print!("{}", letter);
+                }
+            }
+            println!();
+        }
+    }
+}

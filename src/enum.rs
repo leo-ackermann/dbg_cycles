@@ -30,7 +30,7 @@ fn test_map_word_to_cycle() {
 
 
 
-fn enum_cycles_fixed_length(length: usize, order: usize, sigma: u8) -> Vec<Cycle> {
+pub fn enum_cycles_fixed_length(length: usize, order: usize, sigma: u8) -> Vec<Cycle> {
     let mut collection = <Vec<Cycle>>::new();
 
     // Recover LyndonWords
@@ -72,7 +72,7 @@ fn test_enum_cycles_fixed_length() {
 
 
 
-fn enum_cycles_bounded_length(length: usize, order: usize, sigma: u8) -> Vec<Cycle> {
+pub fn enum_cycles_bounded_length(length: usize, order: usize, sigma: u8) -> Vec<Cycle> {
     let mut collection = <Vec<Cycle>>::new();
 
     // Recover LyndonWords
