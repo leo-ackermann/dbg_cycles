@@ -26,8 +26,24 @@ use dbg_cycles::r#enum::{enum_cycles_bounded_length, enum_cycles_fixed_length};
 
 #[derive(Parser, Debug)]
 #[command(name = "dbg_cycles")]
+#[command(author = "Léo Ackermann")]
 #[command(
-    about = "CLI tool to count and enumerate simple cycles in the de Bruijn graph",
+    about = r#"
+╔╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╗
+╠╬╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╬╣
+╠╣         _ ____   ____                   _              ╠╣
+╠╣      __| | __ ) / ___|   ___ _   _  ___| | ___  ___    ╠╣
+╠╣     / _` |  _ \| |  _   / __| | | |/ __| |/ _ \/ __|   ╠╣
+╠╣    | (_| | |_) | |_| | | (__| |_| | (__| |  __/\__ \   ╠╣
+╠╣     \__,_|____/ \____|  \___|\__, |\___|_|\___||___/   ╠╣
+╠╣                              |___/                     ╠╣
+╠╬╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╬╣
+╚╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╝
+                                            © Léo Ackermann
+
+    A small CLI tool to count and enumerate simple cycles
+                  in the de Bruijn graph
+"#,
     version = "1.0"
 )]
 

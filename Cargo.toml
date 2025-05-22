@@ -1,0 +1,13 @@
+[package]
+name = "dbg_cycles"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4.5", features = ["derive"] }
+colored = "3.0.0"
+divisors = "0.2.1"
+num = "0.4.3"
+red_primality = "0.2.0"
+reikna = "0.12.3"
+slow_primes = "0.1.14"
